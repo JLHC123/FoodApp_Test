@@ -19,6 +19,7 @@ for food in foods:
 print(foods)
 
 def add_food():
+    global id
     name = input("Enter the name of the food or 'cancel' at any time to go back: ")
     if name.lower() == "cancel":
         return
@@ -37,10 +38,16 @@ def add_food():
     print(f"{name} has been added to the list.")
 
 def delete_food():
-    name = input("Enter the name of the food to delete or 'cancel' to go back: ")
-    if name.lower() == "cancel":
-        return
-    
+    while True:
+        delete_food_id = input("Enter the (id of the) food to delete or 'cancel' to go back: ")
+        if delete_food_id.lower() == "cancel":
+            return
+        for food in foods:
+            if str(food["id"]) == delete_food_id:
+                foods.remove(food)
+                print(f"{food['name']} has been deleted.")
+                return
+        print("Food not found. Please enter a valid food ID.")
 
 def display_foods():
     for food in foods:
@@ -66,6 +73,7 @@ def main():
         print("1. Add a food")
         print("2. Display all foods")
         print("3. Display expired foods")
+        print("4. Delete a food")
         
         choice = input()
         
@@ -76,7 +84,9 @@ def main():
         if choice == "2":
             display_foods()
         if choice == "3":
-            display_expired_foods() 
+            display_expired_foods()
+        if choice == "4":
+            delete_food()
 
    
 
