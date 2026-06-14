@@ -8,8 +8,9 @@ today_date = date.today() # get today's date
 print(f"Today's date is: {today_date}")
 
 foods = [
-    {"name": "Milk", "expires": date(2024, 7, 1)},
-    {"name": "Bread", "expires": date(2024, 6, 30)},
+    {"name": "Milk", "expires": date(2026, 5, 1)},
+    {"name": "Bread", "expires": date(2026, 6, 30)},
+    {"name": "Eggs", "expires": date(2026, 6, 15)},
 ]
 
 for food in foods:
@@ -66,6 +67,12 @@ def debug_display_foods():
     for food in foods:
         print(f"ID: {food['id']}, Name: {food['name']}, Expires: {food['expires']}")
 
+def soon_to_expire():
+    print("Foods expiring within the next 3 days: ")
+    for food in foods:
+        if (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date:
+            print(f"{food['name']} expires on {food['expires']}")
+
 def main():
     while True:
         print("What do you want to do?")
@@ -74,6 +81,7 @@ def main():
         print("2. Display all foods")
         print("3. Display expired foods")
         print("4. Delete a food")
+        print("5. Soon to expire foods")
         
         choice = input()
         
@@ -87,8 +95,8 @@ def main():
             display_expired_foods()
         if choice == "4":
             delete_food()
-
-   
+        if choice == "5":
+            soon_to_expire()
 
 if __name__ == "__main__":
     main()
