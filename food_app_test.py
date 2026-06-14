@@ -1,3 +1,4 @@
+from urllib.parse import quote_plus
 from datetime import date
 
 id = 1
@@ -11,6 +12,7 @@ foods = [
     {"name": "Milk", "expires": date(2026, 5, 1)},
     {"name": "Bread", "expires": date(2026, 6, 30)},
     {"name": "Eggs", "expires": date(2026, 6, 15)},
+    {"name": "Chocolate Milk", "expires": date(2026, 5, 20)},
 ]
 
 for food in foods:
@@ -73,6 +75,25 @@ def soon_to_expire():
         if (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date:
             print(f"{food['name']} expires on {food['expires']}")
 
+def find_food_information():
+    while True:
+        food_id = input("Enter the (id of the) food to find information about or 'cancel' to go back: ")
+        if food_id.lower() == "cancel":
+            return
+        for food in foods:
+            if str(food["id"]) == food_id:
+                food_name = food["name"]
+                search_food_information_url = (
+                    "https://www.google.com/search?q="
+                    + quote_plus(food_name)
+                    )
+                search_food_recipes_url = (
+                    "https://www.google.com/search?q="
+                    + quote_plus(food_name)
+                    + "+recipes")
+                print(f"Search for {food_name} information: {search_food_information_url}")
+                print(f"Search for {food_name} recipes: {search_food_recipes_url}")
+
 def main():
     while True:
         print("What do you want to do?")
@@ -82,6 +103,7 @@ def main():
         print("3. Display expired foods")
         print("4. Delete a food")
         print("5. Soon to expire foods")
+        print("6. Food information")
         
         choice = input()
         
@@ -97,6 +119,8 @@ def main():
             delete_food()
         if choice == "5":
             soon_to_expire()
-
+        if choice == "6":
+            find_food_information()
+            
 if __name__ == "__main__":
     main()
