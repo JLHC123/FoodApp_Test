@@ -35,17 +35,29 @@ def add_food(connection, cursor):
     connection.commit()
     print(f"{name} has been added to the list.")
 
-# def delete_food():
-#     while True:
-#         delete_food_id = input("Enter the (id of the) food to delete or 'cancel' to go back: ")
-#         if delete_food_id.lower() == "cancel":
-#             return
-#         for food in foods:
-#             if str(food["id"]) == delete_food_id:
-#                 foods.remove(food)
-#                 print(f"{food['name']} has been deleted.")
-#                 return
-#         print("Food not found. Please enter a valid food ID.")
+def delete_food(connection, cursor):
+    while True:
+        delete_food_id = input("Enter the (id of the) food to delete or 'cancel' to go back: ")
+        if delete_food_id.lower() == "cancel":
+            return
+        if not delete_food_id.isdigit():
+            print("Invalid input. Please enter a valid food ID.")
+            continue
+        cursor.execute(
+            "SELECT name FROM foods WHERE id = ?",
+            (delete_food_id,)
+        )
+        food = cursor.fetchone()
+        if food:
+            cursor.execute(
+                "DELETE FROM foods WHERE id = ?",
+                (delete_food_id,)
+            )
+            connection.commit()
+            print(f"{food['name']} has been deleted.")
+            return
+        else:
+            print("Food not found. Please enter a valid food ID.")
         
 def display_foods(cursor, today_date):
     cursor.execute("SELECT id, name, expires FROM foods")
@@ -60,7 +72,7 @@ def display_foods(cursor, today_date):
         message += f"(ID: {food['id']})"
         print(message)
 
-def display_expired_foods(cursor, today_date):
+def display_expired_foods(connection, cursor, today_date):
     cursor.execute("SELECT id, name, expires FROM foods")
     foods = cursor.fetchall()
     print("Expired foods:")
@@ -69,14 +81,12 @@ def display_expired_foods(cursor, today_date):
         if food_expires < today_date:
             print(f"{food['name']} expired on {food['expires']} (ID: {food['id']})")
     print("You should consider throwing these foods away. When you're done, delete them from the list.")
-    
-    
-    # print("Do you want to delete any of these foods now? (yes/no)")
-    # choice = input()
-    # if choice.lower() == "yes":
-    #     delete_food()
-    # if choice.lower() == "no":
-    #     return
+    print("Do you want to delete any of these foods now? (yes/no)")
+    choice = input()
+    if choice.lower() == "yes":
+        delete_food(connection, cursor)
+    if choice.lower() == "no":
+        return
         
 
 # def soon_to_expire():
@@ -148,7 +158,7 @@ def main():
         print("1. Display foods")
         print("2. Add a food")
         print("3. Display expired foods")
-    #     print("4. Delete a food")
+        print("4. Delete a food")
     #     print("5. Soon to expire foods")
     #     print("6. Food information")
     #     print("7. Exit")
@@ -160,9 +170,9 @@ def main():
         elif choice == "2":
             add_food(connection, cursor)
         elif choice == "3":
-            display_expired_foods(cursor, today_date)
-    #     elif choice == "4":
-    #         delete_food()
+            display_expired_foods(connection, cursor, today_date)
+        elif choice == "4":
+            delete_food(connection, cursor)
     #     elif choice == "5":
     #         soon_to_expire()
     #     elif choice == "6":
