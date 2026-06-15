@@ -10,6 +10,7 @@ foods = [
     {"name": "Bread", "expires": date(2026, 6, 30)},
     {"name": "Eggs", "expires": date(2026, 6, 15)},
     {"name": "Chocolate Milk", "expires": date(2026, 5, 20)},
+    {"name": "Milk", "expires": date(2026, 6, 15)},
 ]
 
 for food in foods:
@@ -65,7 +66,10 @@ def display_expired_foods():
         
 def display_foods():
     for food in foods:
-        print(f"ID: {food['id']}, Name: {food['name']}, Expires: {food['expires']}")
+        if food["expires"] < today_date:
+            print(f"ID: {food['id']}, Name: {food['name']}, Expired: {food['expires']}")
+        else:
+            print(f"ID: {food['id']}, Name: {food['name']}, Expires: {food['expires']}")
 
 def soon_to_expire():
     print("Foods expiring within the next 3 days: ")
@@ -85,8 +89,17 @@ def find_food_information():
         if food_id.lower() == "cancel":
             return
         for food in foods:
-            if str(food["id"]) == food_id:
+            if str(food["id"]) == food_id: # need to add database functionality to order by name instead of just id
                 food_name = food["name"]
+                if food["expires"] < today_date:
+                    print(f"{food_name} (There is an expired food with this name): ")
+                elif (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date:
+                    print(f"{food_name} (There is a soon to expire food with this name): ")
+                elif (food["expires"] < today_date and (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date):
+                    print(f"{food_name} (There is an expired and soon to expire food with this name): ")
+                else:
+                    print(f"{food_name}: ")       
+                
                 search_food_information_url = (
                     "https://www.google.com/search?q="
                     + quote_plus(food_name)
@@ -111,6 +124,7 @@ def main():
         print("4. Delete a food")
         print("5. Soon to expire foods")
         print("6. Food information")
+        print("7. Exit")
         
         choice = input()
         
@@ -126,6 +140,9 @@ def main():
             soon_to_expire()
         elif choice == "6":
             find_food_information()
+        elif choice == "7":
+            print("Goodbye!")
+            break
             
 if __name__ == "__main__":
     main()
