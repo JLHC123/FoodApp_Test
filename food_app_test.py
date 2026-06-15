@@ -3,10 +3,7 @@ from datetime import date
 
 id = 1
 
-print("Hello World!")
-
 today_date = date.today() # get today's date
-print(f"Today's date is: {today_date}")
 
 foods = [
     {"name": "Milk", "expires": date(2026, 5, 1)},
@@ -18,8 +15,6 @@ foods = [
 for food in foods:
     food["id"] = id
     id += 1
-
-print(foods)
 
 def add_food():
     global id
@@ -51,10 +46,6 @@ def delete_food():
                 print(f"{food['name']} has been deleted.")
                 return
         print("Food not found. Please enter a valid food ID.")
-
-def display_foods():
-    for food in foods:
-        print(f"{food['name']} expires on {food['expires']}")
         
 def display_expired_foods():
     expired_foods = []
@@ -63,9 +54,16 @@ def display_expired_foods():
             expired_foods.append(food)
     print("Expired foods:")
     for food in expired_foods:
-        print(f"{food['name']} expired on {food['expires']}") 
+        print(f"{food['name']} expired on {food['expires']} (ID: {food['id']})") 
+    print("You should consider throwing these foods away. When you're done, delete them from the list.")
+    print("Do you want to delete any of these foods now? (yes/no)")
+    choice = input()
+    if choice.lower() == "yes":
+        delete_food()
+    if choice.lower() == "no":
+        return
         
-def debug_display_foods():
+def display_foods():
     for food in foods:
         print(f"ID: {food['id']}, Name: {food['name']}, Expires: {food['expires']}")
 
@@ -73,7 +71,13 @@ def soon_to_expire():
     print("Foods expiring within the next 3 days: ")
     for food in foods:
         if (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date:
-            print(f"{food['name']} expires on {food['expires']}")
+            print(f"{food['name']} expires on {food['expires']} (ID: {food['id']})")
+    print("Do you want to learn more about any of these foods? (yes/no)")
+    choice = input()
+    if choice.lower() == "yes":
+        find_food_information()
+    if choice.lower() == "no":
+        return
 
 def find_food_information():
     while True:
@@ -88,18 +92,21 @@ def find_food_information():
                     + quote_plus(food_name)
                     )
                 search_food_recipes_url = (
-                    "https://www.google.com/search?q="
+                    "https://www.google.com/search?q=" # in the future it uses the system's default search engine
                     + quote_plus(food_name)
                     + "+recipes")
                 print(f"Search for {food_name} information: {search_food_information_url}")
                 print(f"Search for {food_name} recipes: {search_food_recipes_url}")
+                return
+        print("Food not found. Please enter a valid food ID.")
 
 def main():
+    print ("Welcome to the Food Expiration Tracker!")
+    print("Today's date is:", today_date)
     while True:
         print("What do you want to do?")
-        print("0. Debug: Display foods with IDs")
-        print("1. Add a food")
-        print("2. Display all foods")
+        print("1. Display foods")
+        print("2. Add a food")
         print("3. Display expired foods")
         print("4. Delete a food")
         print("5. Soon to expire foods")
@@ -107,19 +114,17 @@ def main():
         
         choice = input()
         
-        if choice == "0":
-            debug_display_foods()
         if choice == "1":
-            add_food()
-        if choice == "2":
             display_foods()
-        if choice == "3":
+        elif choice == "2":
+            add_food()
+        elif choice == "3":
             display_expired_foods()
-        if choice == "4":
+        elif choice == "4":
             delete_food()
-        if choice == "5":
+        elif choice == "5":
             soon_to_expire()
-        if choice == "6":
+        elif choice == "6":
             find_food_information()
             
 if __name__ == "__main__":
