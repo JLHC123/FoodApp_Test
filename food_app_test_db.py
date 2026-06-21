@@ -1,19 +1,6 @@
 from urllib.parse import quote_plus
-from datetime import date
+from datetime import date, timedelta
 import sqlite3
-
-# id = 1
-# foods = [
-#     {"name": "Milk", "expires": date(2026, 5, 1)},
-#     {"name": "Bread", "expires": date(2026, 6, 30)},
-#     {"name": "Eggs", "expires": date(2026, 6, 15)},
-#     {"name": "Chocolate Milk", "expires": date(2026, 5, 20)},
-#     {"name": "Milk", "expires": date(2026, 6, 15)},
-# ]
-
-# for food in foods:
-#     food["id"] = id
-#     id += 1
 
 def add_food(connection, cursor):
     name = input("Enter the name of the food or 'cancel' at any time to go back: ")
@@ -73,13 +60,14 @@ def display_foods(cursor, today_date):
         print(message)
 
 def display_expired_foods(connection, cursor, today_date):
-    cursor.execute("SELECT id, name, expires FROM foods")
-    foods = cursor.fetchall()
+    cursor.execute(
+        "SELECT id, name, expires FROM foods WHERE expires < ?",
+        (today_date.isoformat(),)
+    )
+    expired_foods = cursor.fetchall()
     print("Expired foods:")
-    for food in foods:
-        food_expires = date.fromisoformat(food['expires'])
-        if food_expires < today_date:
-            print(f"{food['name']} expired on {food['expires']} (ID: {food['id']})")
+    for food in expired_foods:
+        print(f"{food['name']} expired on {food['expires']} (ID: {food['id']})")
     print("You should consider throwing these foods away. When you're done, delete them from the list.")
     print("Do you want to delete any of these foods now? (yes/no)")
     choice = input()
@@ -88,48 +76,59 @@ def display_expired_foods(connection, cursor, today_date):
     if choice.lower() == "no":
         return
         
+def display_soon_to_expire_foods(cursor, today_date):
+    print("Foods expiring within the next 3 days: ")
+    cursor.execute(
+        "SELECT id, name, expires FROM foods WHERE expires >= ? AND expires <= ?",
+        (today_date.isoformat(), (today_date + timedelta(days=3)).isoformat())
+    )
+    soon_to_expire_foods = cursor.fetchall()
+    for food in soon_to_expire_foods:
+        print(f"{food['name']} expires on {food['expires']} (ID: {food['id']})")
+    print("Do you want to learn more about any of these foods? (yes/no)")
+    choice = input()
+    if choice.lower() == "yes":
+        find_food_information()
+    if choice.lower() == "no":
+        return
 
-# def soon_to_expire():
-#     print("Foods expiring within the next 3 days: ")
-#     for food in foods:
-#         if (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date:
-#             print(f"{food['name']} expires on {food['expires']} (ID: {food['id']})")
-#     print("Do you want to learn more about any of these foods? (yes/no)")
-#     choice = input()
-#     if choice.lower() == "yes":
-#         find_food_information()
-#     if choice.lower() == "no":
-#         return
-
-# def find_food_information():
-    # while True:
-    #     food_id = input("Enter the (id of the) food to find information about or 'cancel' to go back: ")
-    #     if food_id.lower() == "cancel":
-    #         return
-    #     for food in foods:
-    #         if str(food["id"]) == food_id: # need to add database functionality to order by name instead of just id
-    #             food_name = food["name"]
-    #             if food["expires"] < today_date:
-    #                 print(f"{food_name} (There is an expired food with this name): ")
-    #             elif (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date:
-    #                 print(f"{food_name} (There is a soon to expire food with this name): ")
-    #             elif (food["expires"] < today_date and (food["expires"] - today_date).days <= 3 and food["expires"] >= today_date):
-    #                 print(f"{food_name} (There is an expired and soon to expire food with this name): ")
-    #             else:
-    #                 print(f"{food_name}: ")       
+def find_food_information(cursor):
+    while True:
+        food_id = input("Enter the (id of the) food to find information about or 'cancel' to go back: ")
+        if food_id.lower() == "cancel":
+            return
+        if not food_id.isdigit():
+            print("Invalid input. Please enter a valid food ID.")
+            continue
+        cursor.execute(
+            "SELECT name, expires FROM foods WHERE id = ?",
+            (food_id,)
+        )
+        food = cursor.fetchone()
+        if food:
+            food_name = food['name']
+            food_expires = date.fromisoformat(food['expires'])
+            if food_expires < date.today():
+                print(f"{food_name} (There is an expired food with this name): ")
+            elif (food_expires - date.today()).days <= 3 and food_expires >= date.today():
+                print(f"{food_name} (There is a soon to expire food with this name): ")
+            elif (food_expires < date.today() and (food_expires - date.today()).days <= 3 and food_expires >= date.today()):
+                print(f"{food_name} (There is an expired and soon to expire food with this name): ")
+            else:
+                print(f"{food_name}: ")       
                 
-    #             search_food_information_url = (
-    #                 "https://www.google.com/search?q="
-    #                 + quote_plus(food_name)
-    #                 )
-    #             search_food_recipes_url = (
-    #                 "https://www.google.com/search?q=" # in the future it uses the system's default search engine
-    #                 + quote_plus(food_name)
-    #                 + "+recipes")
-    #             print(f"Search for {food_name} information: {search_food_information_url}")
-    #             print(f"Search for {food_name} recipes: {search_food_recipes_url}")
-    #             return
-    #     print("Food not found. Please enter a valid food ID.")
+            search_food_information_url = (
+                "https://www.google.com/search?q="
+                + quote_plus(food_name)
+                )
+            search_food_recipes_url = (
+                "https://www.google.com/search?q=" # in the future it uses the system's default search engine
+                + quote_plus(food_name)
+                + "+recipes")
+            print(f"Search for {food_name} information: {search_food_information_url}")
+            print(f"Search for {food_name} recipes: {search_food_recipes_url}")
+            return
+        print("Food not found. Please enter a valid food ID.")
 
 def setup_database():
     connection = sqlite3.connect("food_app.db")
@@ -159,9 +158,9 @@ def main():
         print("2. Add a food")
         print("3. Display expired foods")
         print("4. Delete a food")
-    #     print("5. Soon to expire foods")
-    #     print("6. Food information")
-    #     print("7. Exit")
+        print("5. Soon to expire foods")
+        print("6. Food information")
+        print("7. Exit")
         
         choice = input()
         
@@ -173,13 +172,13 @@ def main():
             display_expired_foods(connection, cursor, today_date)
         elif choice == "4":
             delete_food(connection, cursor)
-    #     elif choice == "5":
-    #         soon_to_expire()
-    #     elif choice == "6":
-    #         find_food_information()
-    #     elif choice == "7":
-    #         print("Goodbye!")
-    #         break
+        elif choice == "5":
+            display_soon_to_expire_foods(cursor, today_date)
+        elif choice == "6":
+            find_food_information(cursor)
+        elif choice == "7":
+            print("Goodbye!")
+            break
             
 if __name__ == "__main__":
     main()
