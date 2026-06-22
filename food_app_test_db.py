@@ -17,7 +17,7 @@ def add_food(connection, cursor):
             print("Invalid date format. Please enter the date in YYYY-MM-DD format.")
     cursor.execute(
         "INSERT INTO foods (name, expires) VALUES (?, ?)", 
-        (name, expires)
+        (name, expires.isoformat())
         )
     connection.commit()
     print(f"{name} has been added to the list.")
@@ -47,7 +47,7 @@ def delete_food(connection, cursor):
             print("Food not found. Please enter a valid food ID.")
         
 def display_foods(cursor, today_date):
-    cursor.execute("SELECT id, name, expires FROM foods")
+    cursor.execute("SELECT id, name, expires FROM foods ORDER BY expires")
     foods = cursor.fetchall() 
     for food in foods:
         message = f"{food['name']}: "
@@ -61,7 +61,7 @@ def display_foods(cursor, today_date):
 
 def display_expired_foods(connection, cursor, today_date):
     cursor.execute(
-        "SELECT id, name, expires FROM foods WHERE expires < ?",
+        "SELECT id, name, expires FROM foods WHERE expires < ? ORDER BY expires",
         (today_date.isoformat(),)
     )
     expired_foods = cursor.fetchall()
@@ -79,7 +79,7 @@ def display_expired_foods(connection, cursor, today_date):
 def display_soon_to_expire_foods(cursor, today_date):
     print("Foods expiring within the next 3 days: ")
     cursor.execute(
-        "SELECT id, name, expires FROM foods WHERE expires >= ? AND expires <= ?",
+        "SELECT id, name, expires FROM foods WHERE expires >= ? AND expires <= ? ORDER BY expires",
         (today_date.isoformat(), (today_date + timedelta(days=3)).isoformat())
     )
     soon_to_expire_foods = cursor.fetchall()
@@ -88,7 +88,7 @@ def display_soon_to_expire_foods(cursor, today_date):
     print("Do you want to learn more about any of these foods? (yes/no)")
     choice = input()
     if choice.lower() == "yes":
-        find_food_information()
+        find_food_information(cursor)
     if choice.lower() == "no":
         return
 
@@ -107,15 +107,27 @@ def find_food_information(cursor):
         food = cursor.fetchone()
         if food:
             food_name = food['name']
-            food_expires = date.fromisoformat(food['expires'])
-            if food_expires < date.today():
+            cursor.execute(
+                "SELECT name, expires, id FROM foods WHERE name = ?",
+                (food_name,)
+            )
+            identical_foods = cursor.fetchall()
+            expired = False
+            soon_to_expire = False
+            for identical_food in identical_foods:
+                identical_food_expires = date.fromisoformat(identical_food['expires'])
+                if identical_food_expires < date.today():
+                    expired = True
+                elif (identical_food_expires - date.today()).days <= 3 and identical_food_expires >= date.today():
+                    soon_to_expire = True  
+            if expired and soon_to_expire:
+                print(f"{food_name} (There are both expired and soon to expire foods with this name): ")   
+            elif expired:
                 print(f"{food_name} (There is an expired food with this name): ")
-            elif (food_expires - date.today()).days <= 3 and food_expires >= date.today():
+            elif soon_to_expire:
                 print(f"{food_name} (There is a soon to expire food with this name): ")
-            elif (food_expires < date.today() and (food_expires - date.today()).days <= 3 and food_expires >= date.today()):
-                print(f"{food_name} (There is an expired and soon to expire food with this name): ")
             else:
-                print(f"{food_name}: ")       
+                print(f"{food_name}: ")
                 
             search_food_information_url = (
                 "https://www.google.com/search?q="
