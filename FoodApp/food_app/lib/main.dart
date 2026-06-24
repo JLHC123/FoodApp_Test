@@ -41,40 +41,17 @@ class FoodApp extends StatelessWidget {
                       onTap: () {
                         print('${food['name']} tapped');
                       },
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          // Handle delete action
+                          print('Delete ${food['name']}');
+                        },
+                      )
                     );
                   }
                 )
               )
-              // Expanded(
-              //   child: ListView(
-              //     children: [
-              //       ListTile(
-              //         title: Text('Milk'),
-              //         subtitle: Text('Expires: 2026-06-15'),
-              //         onTap: () {
-              //           print('Milk tapped');
-              //         }
-              //       ),
-              //       ListTile(
-              //         title: Text('Eggs'),
-              //         subtitle: Text('Expires: 2026-06-20'),
-              //         onTap: () {
-              //           print('Eggs tapped');
-              //         }
-              //       ),
-              //       ListTile(
-              //         title: Text('Cheese'),
-              //         subtitle: Text('Expires: 2026-06-25'),
-              //         onTap: () {
-              //           print('Cheese tapped');
-              //         }
-              //       ),
-              //     ]
-              //   )
-              // )
-              // const Text('Milk - Expires: 2026-06-15'),
-              // const Text('Eggs - Expires: 2026-06-20'),
-              // const Text('Cheese - Expires: 2026-06-25'),
             ]
           )
         )
