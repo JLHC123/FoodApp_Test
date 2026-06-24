@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 
-final foods = [
-  {'name': 'Milk', 'expirationDate': '2026-06-15'},
-  {'name': 'Eggs', 'expirationDate': '2026-06-20'},
-  {'name': 'Cheese', 'expirationDate': '2026-06-25'},
-];
-
 void main() {
   runApp(const FoodApp());
 }
 
-class FoodApp extends StatelessWidget {
+class FoodApp extends StatefulWidget {
   const FoodApp({super.key});
+
+  @override
+  State<FoodApp> createState() => _FoodApp();
+}
+
+class _FoodApp extends State<FoodApp> {
+  final foods = [
+  {'name': 'Milk', 'expirationDate': '2026-06-15'},
+  {'name': 'Eggs', 'expirationDate': '2026-06-20'},
+  {'name': 'Cheese', 'expirationDate': '2026-06-25'},
+];
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +49,9 @@ class FoodApp extends StatelessWidget {
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () {
+                          setState(() {
+                            foods.removeAt(index);
+                          });
                           // Handle delete action
                           print('Delete ${food['name']}');
                         },
