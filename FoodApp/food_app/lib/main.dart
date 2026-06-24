@@ -49,11 +49,7 @@ class _FoodApp extends State<FoodApp> {
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () {
-                          setState(() {
-                            foods.removeAt(index);
-                          });
-                          // Handle delete action
-                          print('Delete ${food['name']}');
+                          showDeleteDialog(context, food, index);
                         },
                       )
                     );
@@ -65,5 +61,31 @@ class _FoodApp extends State<FoodApp> {
         )
       ),
     );
+  }
+
+  void showDeleteDialog(BuildContext context, Map<String, String> food, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Food'),
+        content: Text('Delete ${food['name']}?'),
+        actions: [
+          TextButton(
+            onPressed:() {
+              deleteFood(index, food);
+              Navigator.pop(context);
+            },
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void deleteFood(int index, Map<String, String> food) {
+    setState(() {
+      foods.removeAt(index);
+    });
+    print('Delete ${food['name']}');
   }
 }
