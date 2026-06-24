@@ -58,7 +58,13 @@ class _FoodApp extends State<FoodApp> {
               )
             ]
           )
-        )
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            print('Add Food');
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
