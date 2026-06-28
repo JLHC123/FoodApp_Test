@@ -24,6 +24,7 @@ class FoodHomePage extends StatefulWidget {
 }
 
 class _FoodHomePageState extends State<FoodHomePage> {
+  final _formKey = GlobalKey<FormState>();
   final foods = [
     {'name': 'Milk', 'expirationDate': '2026-06-15'},
     {'name': 'Eggs', 'expirationDate': '2026-06-20'},
@@ -54,7 +55,6 @@ class _FoodHomePageState extends State<FoodHomePage> {
                     title: Text(food['name']!),
                     subtitle: Text('Expires: ${food['expirationDate']}'),
                     onTap: () {
-                      print('${food['name']} tapped');
                     },
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
@@ -79,30 +79,47 @@ class _FoodHomePageState extends State<FoodHomePage> {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('Add Food'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: foodNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Food Name',
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: foodNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Food Name',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Enter a food name';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  TextField(
-                    controller: expirationDateController,
-                    decoration: const InputDecoration(
-                      labelText: 'Expiration Date',
-                    ),
-                  )
-                ],
+                    TextFormField(
+                      controller: expirationDateController,
+                      decoration: const InputDecoration(
+                        labelText: 'Expiration Date',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Enter an expiration date';
+                        }
+                        return null;
+                      }
+                    )
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    setState(() {
-                      foods.add({'name': foodNameController.text, 'expirationDate': expirationDateController.text});
-                    });
-                    Navigator.pop(context);
+                    if (_formKey.currentState!.validate()) {
+                      setState(() {
+                        foods.add({'name': foodNameController.text, 'expirationDate': expirationDateController.text});
+                      });
+                      Navigator.pop(context);
+                    }
                   },
                   child: const Text('Add'),
                 )
@@ -138,6 +155,5 @@ class _FoodHomePageState extends State<FoodHomePage> {
     setState(() {
       foods.removeAt(index);
     });
-    print('Delete ${food['name']}');
   }
 }
