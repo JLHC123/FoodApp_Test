@@ -74,92 +74,95 @@ class _FoodHomePageState extends State<FoodHomePage> {
           ]
         )
       ),
-
       // add new foods
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          final foodNameController = TextEditingController(); 
-          final expirationDateController = TextEditingController();
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Add Food'),
-              content: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-
-                      // food user input code
-                      controller: foodNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Food Name',
-                      ),
-
-                      // if empty error
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Enter a food name';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    TextFormField(
-                      // expiration date user input code
-                      controller: expirationDateController,
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Expiration Date',
-                        suffixIcon: Icon(Icons.calendar_today),
-                      ),
-                      
-                      // calender code
-                      onTap: () async {
-                        final pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(DateTime.now().year + 100), // just so that this keeps updating as time goes on
-                        );
-
-                        if (pickedDate != null) {
-                          expirationDateController.text = 
-                          // YYYY, MM, DD, padLeft helps with the formatting
-                          "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                        }
-                      },
-
-                      // if empty error
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Enter an expiration date';
-                        }
-                        return null;
-                      }
-                    )
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  // if both are valid, proceed
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      setState(() {
-                        foods.add({'name': foodNameController.text, 'expirationDate': expirationDateController.text});
-                      });
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Add'),
-                )
-              ],
-            ),
-          );
+          showAddDialog(context);
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void showAddDialog(BuildContext context) {
+    final foodNameController = TextEditingController(); 
+    final expirationDateController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Food'),
+        content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+    
+                // food user input code
+                controller: foodNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Food Name',
+                ),
+    
+                // if empty error
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Enter a food name';
+                  }
+                  return null;
+                },
+              ),
+    
+              TextFormField(
+                // expiration date user input code
+                controller: expirationDateController,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  labelText: 'Expiration Date',
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                
+                // calender code
+                onTap: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(DateTime.now().year + 100), // just so that this keeps updating as time goes on
+                  );
+    
+                  if (pickedDate != null) {
+                    expirationDateController.text = 
+                    // YYYY, MM, DD, padLeft helps with the formatting
+                    "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                  }
+                },
+    
+                // if empty error
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Enter an expiration date';
+                  }
+                  return null;
+                }
+              )
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            // if both are valid, proceed
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                setState(() {
+                  foods.add({'name': foodNameController.text, 'expirationDate': expirationDateController.text});
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          )
+        ],
       ),
     );
   }
