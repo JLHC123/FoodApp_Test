@@ -4,9 +4,9 @@ void main() {
   runApp(const FoodApp());
 }
 
+// this is how MaterialApp should be placed
 class FoodApp extends StatelessWidget {
   const FoodApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,7 +24,10 @@ class FoodHomePage extends StatefulWidget {
 }
 
 class _FoodHomePageState extends State<FoodHomePage> {
+  // for "missing user input"
   final _formKey = GlobalKey<FormState>();
+
+  // stand in for database
   final foods = [
     {'name': 'Milk', 'expirationDate': '2026-06-15'},
     {'name': 'Eggs', 'expirationDate': '2026-06-20'},
@@ -47,6 +50,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
             ),
             const SizedBox(height: 16.0),
             Expanded(
+              // list of foods displayed
               child: ListView.builder(
                 itemCount: foods.length,
                 itemBuilder: (context, index) {
@@ -56,6 +60,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
                     subtitle: Text('Expires: ${food['expirationDate']}'),
                     onTap: () {
                     },
+                    // delete button at the side of each item
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () {
@@ -70,7 +75,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
         )
       ),
 
-      
+      // add new foods
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           final foodNameController = TextEditingController(); 
@@ -85,10 +90,14 @@ class _FoodHomePageState extends State<FoodHomePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextFormField(
+
+                      // food user input code
                       controller: foodNameController,
                       decoration: const InputDecoration(
                         labelText: 'Food Name',
                       ),
+
+                      // if empty error
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Enter a food name';
@@ -96,11 +105,33 @@ class _FoodHomePageState extends State<FoodHomePage> {
                         return null;
                       },
                     ),
+
                     TextFormField(
+                      // expiration date user input code
                       controller: expirationDateController,
+                      readOnly: true,
                       decoration: const InputDecoration(
                         labelText: 'Expiration Date',
+                        suffixIcon: Icon(Icons.calendar_today),
                       ),
+                      
+                      // calender code
+                      onTap: () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(DateTime.now().year + 100), // just so that this keeps updating as time goes on
+                        );
+
+                        if (pickedDate != null) {
+                          expirationDateController.text = 
+                          // YYYY, MM, DD, padLeft helps with the formatting
+                          "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                        }
+                      },
+
+                      // if empty error
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Enter an expiration date';
@@ -113,6 +144,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
               ),
               actions: [
                 TextButton(
+                  // if both are valid, proceed
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
