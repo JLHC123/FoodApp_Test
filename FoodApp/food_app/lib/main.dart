@@ -55,9 +55,27 @@ class _FoodHomePageState extends State<FoodHomePage> {
                 itemCount: foods.length,
                 itemBuilder: (context, index) {
                   final food = foods[index];
+                  final expirationDate = DateTime.parse(food['expirationDate']!);
+                  final today = DateTime.now();
+
+                  // expiration date icon color code
+                  String expirationStatusIcon;
+                  if (expirationDate.isBefore(today)) {
+                    expirationStatusIcon = '🔴';
+                  }
+                  else if (expirationDate.difference(today).inDays <= 3) {
+                    expirationStatusIcon = '🟡';
+                  }
+                  else {
+                    expirationStatusIcon = '🟢';
+                  }
                   return ListTile(
+                    leading: Text(
+                      expirationStatusIcon,
+                    ),
                     title: Text(food['name']!),
-                    subtitle: Text('Expires: ${food['expirationDate']}'),
+                    subtitle: 
+                    Text('Expires: ${food['expirationDate']}'),
                     onTap: () {
                     },
                     // delete button at the side of each item
@@ -178,6 +196,10 @@ class _FoodHomePageState extends State<FoodHomePage> {
             onPressed:() {
               deleteFood(index, food);
               Navigator.pop(context);
+              // // to check if items are being deleted properly
+              // for (final food in foods) {
+              //   print(food);
+              // }
             },
             child: Text('Delete'),
           ),
