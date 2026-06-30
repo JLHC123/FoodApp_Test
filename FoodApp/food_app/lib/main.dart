@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const FoodApp());
@@ -23,15 +24,40 @@ class FoodHomePage extends StatefulWidget {
   State<FoodHomePage> createState() => _FoodHomePageState();
 }
 
+class Food{
+  final int id;
+  final String name;
+  final DateTime expirationDate;
+
+  Food({
+    required this.id,
+    required this.name,
+    required this.expirationDate,
+  });
+}
+
 class _FoodHomePageState extends State<FoodHomePage> {
   // for "missing user input"
   final _formKey = GlobalKey<FormState>();
 
   // stand in for database
-  final foods = [
-    {'name': 'Milk', 'expirationDate': '2026-06-15'},
-    {'name': 'Eggs', 'expirationDate': '2026-06-20'},
-    {'name': 'Cheese', 'expirationDate': '2026-06-25'},
+  int nextId = 4;
+  final List<Food> foods = [
+    Food(
+      id: 1,
+      name: 'Milk',
+      expirationDate: DateTime(2026, 6, 15),
+    ),
+    Food(
+      id: 2,
+      name: 'Burger',
+      expirationDate: DateTime(2026, 6, 30),
+    ),
+    Food(
+      id: 3,
+      name: 'Canned Beans',
+      expirationDate: DateTime(2057, 6, 23),
+    )
   ];
 
   @override
@@ -55,7 +81,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
                 itemCount: foods.length,
                 itemBuilder: (context, index) {
                   final food = foods[index];
-                  final expirationDate = DateTime.parse(food['expirationDate']!);
+                  final expirationDate = food.expirationDate;
                   final today = DateTime.now();
 
                   // expiration date icon color code
@@ -73,9 +99,10 @@ class _FoodHomePageState extends State<FoodHomePage> {
                     leading: Text(
                       expirationStatusIcon,
                     ),
-                    title: Text(food['name']!),
+                    title: Text(food.name),
                     subtitle: 
-                    Text('Expires: ${food['expirationDate']}'),
+                    // 
+                    Text('Expires: ${DateFormat('yyyy-MM-dd').format(food.expirationDate)}'),
                     onTap: () {
                     },
                     // delete button at the side of each item
@@ -173,7 +200,13 @@ class _FoodHomePageState extends State<FoodHomePage> {
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 setState(() {
-                  foods.add({'name': foodNameController.text, 'expirationDate': expirationDateController.text});
+                  foods.add(
+                    Food(
+                      id: nextId++,
+                      name: foodNameController.text,
+                      expirationDate: DateTime.parse(expirationDateController.text,)
+                      )
+                    );
                 });
                 Navigator.pop(context);
               }
@@ -185,12 +218,12 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
-  void showDeleteDialog(BuildContext context, Map<String, String> food, int index) {
+  void showDeleteDialog(BuildContext context, Food food, int index) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Delete Food'),
-        content: Text('Delete ${food['name']}?'),
+        content: Text('Delete ${food.name}?'),
         actions: [
           TextButton(
             onPressed:() {
@@ -208,7 +241,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
-  void deleteFood(int index, Map<String, String> food) {
+  void deleteFood(int index, Food food) {
     setState(() {
       foods.removeAt(index);
     });
