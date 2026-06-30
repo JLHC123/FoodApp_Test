@@ -81,8 +81,20 @@ class _FoodHomePageState extends State<FoodHomePage> {
                 itemCount: foods.length,
                 itemBuilder: (context, index) {
                   final food = foods[index];
-                  final expirationDate = food.expirationDate;
-                  final today = DateTime.now();
+                  
+                  // so that only the year, month and date are compared (not hour, minute, second)
+                  final now = DateTime.now();
+                  final today = DateTime(
+                    now.year,
+                    now.month,
+                    now.day
+                  );
+
+                  final expirationDate = DateTime(
+                    food.expirationDate.year,
+                    food.expirationDate.month,
+                    food.expirationDate.day,
+                  );
 
                   // expiration date icon color code
                   String expirationStatusIcon;
