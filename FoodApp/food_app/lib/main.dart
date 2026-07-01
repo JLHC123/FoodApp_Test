@@ -162,7 +162,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () {
-                        showDeleteDialog(context, food, index);
+                        showDeleteDialog(context, food);
                       },
                     )
                   );
@@ -271,7 +271,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
-  void showDeleteDialog(BuildContext context, Food food, int index) {
+  void showDeleteDialog(BuildContext context, Food food) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -280,7 +280,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
         actions: [
           TextButton(
             onPressed:() {
-              deleteFood(index, food);
+              deleteFood(food);
               Navigator.pop(context);
               // // to check if items are being deleted properly
               // for (final food in foods) {
@@ -294,9 +294,9 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
-  void deleteFood(int index, Food food) {
+  void deleteFood(Food food) {
     setState(() {
-      foods.removeAt(index);
+      foods.remove(food);
     });
   }
 }
