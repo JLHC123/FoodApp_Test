@@ -79,6 +79,12 @@ class _FoodHomePageState extends State<FoodHomePage> {
         return food.expirationDate.isBefore(today);
       }).toList();
     }
+    else if (selectedFilter == 'Expiring Soon') {
+      filteredFoods = foods.where((food) {
+        final difference = food.expirationDate.difference(today).inDays;
+        return difference >= 0 && difference <= 3;
+      }).toList();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -104,6 +110,10 @@ class _FoodHomePageState extends State<FoodHomePage> {
                 DropdownMenuItem(
                   value: 'Expired',
                   child: Text('Expired'),
+                ),
+                DropdownMenuItem(
+                  value: 'Expiring Soon',
+                  child: Text('Expiring Soon'),
                 ),
               ],
               onChanged: (value) {
