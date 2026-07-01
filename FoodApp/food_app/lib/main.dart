@@ -60,8 +60,26 @@ class _FoodHomePageState extends State<FoodHomePage> {
     )
   ];
 
+  String selectedFilter = "All";
+  
   @override
   Widget build(BuildContext context) {
+    // now truncated to just year month day 
+    final now = DateTime.now();
+    final today = DateTime(
+      now.year,
+      now.month,
+      now.day
+    );
+
+    // filtering logic
+    List<Food> filteredFoods = foods;
+    if (selectedFilter == 'Expired') {
+      filteredFoods = foods.where((food) {
+        return food.expirationDate.isBefore(today);
+      }).toList();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Food Expiration App'),
@@ -75,21 +93,34 @@ class _FoodHomePageState extends State<FoodHomePage> {
               'Welcome to the Food Expiration App!',
             ),
             const SizedBox(height: 16.0),
+
+            DropdownButton<String>(
+              value: selectedFilter,
+              items: const [
+                DropdownMenuItem(
+                  value: 'All',
+                  child: Text('All'),
+                ),
+                DropdownMenuItem(
+                  value: 'Expired',
+                  child: Text('Expired'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  selectedFilter = value!;
+                });
+              },
+            ),
+            
             Expanded(
               // list of foods displayed
               child: ListView.builder(
-                itemCount: foods.length,
+                itemCount: filteredFoods.length,
                 itemBuilder: (context, index) {
-                  final food = foods[index];
+                  final food = filteredFoods[index];
                   
-                  // so that only the year, month and date are compared (not hour, minute, second)
-                  final now = DateTime.now();
-                  final today = DateTime(
-                    now.year,
-                    now.month,
-                    now.day
-                  );
-
+                  // expiration date truncated to just year month day
                   final expirationDate = DateTime(
                     food.expirationDate.year,
                     food.expirationDate.month,
