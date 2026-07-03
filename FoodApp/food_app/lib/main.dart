@@ -36,12 +36,12 @@ class _FoodHomePageState extends State<FoodHomePage> {
   @override
   void initState() {
     super.initState();
-    initalizeApp();
+    initializeApp();
     
   }
 
-  Future<void> initalizeApp() async {
-    await foodDatabase.initalizeDatabase();
+  Future<void> initializeApp() async {
+    await foodDatabase.initializeDatabase();
     await loadFoods();
   }
 

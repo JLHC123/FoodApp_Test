@@ -6,7 +6,7 @@ class FoodDatabase {
     Database? _database;
 
     // initalize the database
-    Future<void> initalizeDatabase() async {
+    Future<void> initializeDatabase() async {
         final databasePath = await getDatabasesPath();
         // Create new database seperate from the original food_app.db in case we need to continue testing in the original python code
         final path = join(databasePath, 'food_expiration_database.db');
