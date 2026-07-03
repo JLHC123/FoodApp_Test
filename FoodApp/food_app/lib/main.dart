@@ -75,8 +75,14 @@ class _FoodHomePageState extends State<FoodHomePage> {
     }
     else if (selectedFilter == 'Expiring Soon') {
       filteredFoods = foods.where((food) {
-        final difference = food.expirationDate.difference(today).inDays;
-        return difference >= 0 && difference <= 3;
+        final daysLeft = food.expirationDate.difference(today).inDays;
+        return daysLeft >= 0 && daysLeft <= 3;
+      }).toList();
+    }
+    else if (selectedFilter == 'Fresh') {
+      filteredFoods = foods.where((food) {
+        final daysLeft = food.expirationDate.difference(today).inDays;
+        return daysLeft > 3;
       }).toList();
     }
 
@@ -109,6 +115,10 @@ class _FoodHomePageState extends State<FoodHomePage> {
                   value: 'Expiring Soon',
                   child: Text('Expiring Soon'),
                 ),
+                DropdownMenuItem(
+                  value: 'Fresh',
+                  child: Text('Fresh'),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -131,12 +141,14 @@ class _FoodHomePageState extends State<FoodHomePage> {
                     food.expirationDate.day,
                   );
 
+                  final daysLeft = expirationDate.difference(today).inDays;
+
                   // expiration date icon color code
                   String expirationStatusIcon;
                   if (expirationDate.isBefore(today)) {
                     expirationStatusIcon = '🔴';
                   }
-                  else if (expirationDate.difference(today).inDays <= 3) {
+                  else if (daysLeft <= 3) {
                     expirationStatusIcon = '🟡';
                   }
                   else {
