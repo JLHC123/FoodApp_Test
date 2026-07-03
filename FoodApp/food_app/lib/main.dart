@@ -68,23 +68,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
 
     // filtering logic
     List<Food> filteredFoods = foods;
-    if (selectedFilter == 'Expired') {
-      filteredFoods = foods.where((food) {
-        return food.expirationDate.isBefore(today);
-      }).toList();
-    }
-    else if (selectedFilter == 'Expiring Soon') {
-      filteredFoods = foods.where((food) {
-        final daysLeft = food.expirationDate.difference(today).inDays;
-        return daysLeft >= 0 && daysLeft <= 3;
-      }).toList();
-    }
-    else if (selectedFilter == 'Fresh') {
-      filteredFoods = foods.where((food) {
-        final daysLeft = food.expirationDate.difference(today).inDays;
-        return daysLeft > 3;
-      }).toList();
-    }
+    filteredFoods = getFilteredFoods(filteredFoods, selectedFilter, today);
 
     return Scaffold(
       appBar: AppBar(
@@ -186,6 +170,27 @@ class _FoodHomePageState extends State<FoodHomePage> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  List<Food> getFilteredFoods(List<Food> foods, String selectedFilter, DateTime today) {
+    if (selectedFilter == 'Expired') {
+      return foods.where((food) {
+        return food.expirationDate.isBefore(today);
+      }).toList();
+    }
+    else if (selectedFilter == 'Expiring Soon') {
+      return foods.where((food) {
+        final daysLeft = food.expirationDate.difference(today).inDays;
+        return daysLeft >= 0 && daysLeft <= 3;
+      }).toList();
+    }
+    else if (selectedFilter == 'Fresh') {
+      return foods.where((food) {
+        final daysLeft = food.expirationDate.difference(today).inDays;
+        return daysLeft > 3;
+      }).toList();
+    }
+    return foods;
   }
 
   void showAddDialog(BuildContext context) {
