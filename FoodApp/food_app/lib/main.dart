@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'food.dart';
 
 void main() {
   runApp(const FoodApp());
@@ -22,18 +23,6 @@ class FoodHomePage extends StatefulWidget {
 
   @override
   State<FoodHomePage> createState() => _FoodHomePageState();
-}
-
-class Food{
-  final int id;
-  final String name;
-  final DateTime expirationDate;
-
-  Food({
-    required this.id,
-    required this.name,
-    required this.expirationDate,
-  });
 }
 
 class _FoodHomePageState extends State<FoodHomePage> {
