@@ -7,7 +7,6 @@ void main() {
   runApp(const FoodApp());
 }
 
-// this is how MaterialApp should be placed
 class FoodApp extends StatelessWidget {
   const FoodApp({super.key});
   @override
@@ -27,49 +26,22 @@ class FoodHomePage extends StatefulWidget {
 }
 
 class _FoodHomePageState extends State<FoodHomePage> {
-  // for "missing user input"
   final _formKey = GlobalKey<FormState>();
-
-  // time to finally add sql database
   final FoodDatabase foodDatabase = FoodDatabase();
+  List<Food> foods = [];
+  String selectedFilter = "All";
 
   @override
   void initState() {
     super.initState();
     initializeApp();
-    
   }
 
-  Future<void> initializeApp() async {
-    await foodDatabase.initializeDatabase();
-    await loadFoods();
-  }
-
-  List<Food> foods = [];
-
-  Future<void> loadFoods() async {
-    final data = await foodDatabase.getAllFoods();
-    setState(() {
-      foods = data;
-    });
-  }
-
-  String selectedFilter = "All";
-  
   @override
   Widget build(BuildContext context) {
-    // now truncated to just year month day 
-    final now = DateTime.now();
-    final today = DateTime(
-      now.year,
-      now.month,
-      now.day
-    );
-
-    // filtering logic
+    DateTime today = getToday();
     List<Food> filteredFoods = foods;
     filteredFoods = getFilteredFoods(filteredFoods, selectedFilter, today);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Food Expiration App'),
@@ -83,86 +55,11 @@ class _FoodHomePageState extends State<FoodHomePage> {
               'Welcome to the Food Expiration App!',
             ),
             const SizedBox(height: 16.0),
-
-            DropdownButton<String>(
-              value: selectedFilter,
-              items: const [
-                DropdownMenuItem(
-                  value: 'All',
-                  child: Text('All'),
-                ),
-                DropdownMenuItem(
-                  value: 'Expired',
-                  child: Text('Expired'),
-                ),
-                DropdownMenuItem(
-                  value: 'Expiring Soon',
-                  child: Text('Expiring Soon'),
-                ),
-                DropdownMenuItem(
-                  value: 'Fresh',
-                  child: Text('Fresh'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  selectedFilter = value!;
-                });
-              },
-            ),
-            
-            Expanded(
-              // list of foods displayed
-              child: ListView.builder(
-                itemCount: filteredFoods.length,
-                itemBuilder: (context, index) {
-                  final food = filteredFoods[index];
-                  
-                  // expiration date truncated to just year month day
-                  final expirationDate = DateTime(
-                    food.expirationDate.year,
-                    food.expirationDate.month,
-                    food.expirationDate.day,
-                  );
-
-                  final daysLeft = expirationDate.difference(today).inDays;
-
-                  // expiration date icon color code
-                  String expirationStatusIcon;
-                  if (expirationDate.isBefore(today)) {
-                    expirationStatusIcon = '🔴';
-                  }
-                  else if (daysLeft <= 3) {
-                    expirationStatusIcon = '🟡';
-                  }
-                  else {
-                    expirationStatusIcon = '🟢';
-                  }
-                  return ListTile(
-                    leading: Text(
-                      expirationStatusIcon,
-                    ),
-                    title: Text(food.name),
-                    subtitle: 
-                    // 
-                    Text('Expires: ${DateFormat('yyyy-MM-dd').format(food.expirationDate)}'),
-                    onTap: () {
-                    },
-                    // delete button at the side of each item
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        showDeleteDialog(context, food);
-                      },
-                    )
-                  );
-                }
-              )
-            )
+            dropDownWidget(),
+            expandFoodListBuilder(filteredFoods, today)
           ]
         )
       ),
-      // add new foods
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showAddDialog(context);
@@ -172,6 +69,81 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
+  // Build the list of foods based on the filtered list
+  Expanded expandFoodListBuilder(List<Food> filteredFoods, DateTime today) {
+    return Expanded(
+            // list of foods displayed
+            child: ListView.builder(
+              itemCount: filteredFoods.length,
+              itemBuilder: (context, index) {
+                final food = filteredFoods[index];
+                
+                // expiration date truncated to just year month day
+                final expirationDate = DateTime(
+                  food.expirationDate.year,
+                  food.expirationDate.month,
+                  food.expirationDate.day,
+                );
+
+                final daysLeft = expirationDate.difference(today).inDays;
+
+                // expiration date icon color code
+                String expirationStatusIcon;
+                if (expirationDate.isBefore(today)) {
+                  expirationStatusIcon = '🔴';
+                }
+                else if (daysLeft <= 3) {
+                  expirationStatusIcon = '🟡';
+                }
+                else {
+                  expirationStatusIcon = '🟢';
+                }
+                return ListTile(
+                  leading: Text(
+                    expirationStatusIcon,
+                  ),
+                  title: Text(food.name),
+                  subtitle: 
+                  Text('Expires: ${DateFormat('yyyy-MM-dd').format(food.expirationDate)}'),
+                  onTap: () {
+                  },
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      showDeleteDialog(context, food);
+                    },
+                  )
+                );
+              }
+            )
+          );
+  }
+
+  // Initialize the database and load foods when the app starts
+  Future<void> initializeApp() async {
+    await foodDatabase.initializeDatabase();
+    await loadFoods();
+  }
+
+  Future<void> loadFoods() async {
+    final data = await foodDatabase.getAllFoods();
+    setState(() {
+      foods = data;
+    });
+  }
+
+  // Get today's date without time component
+  DateTime getToday() {
+    final now = DateTime.now();
+    final today = DateTime(
+      now.year,
+      now.month,
+      now.day
+    );
+    return today;
+  }
+
+  // Filter foods based on the selected filter
   List<Food> getFilteredFoods(List<Food> foods, String selectedFilter, DateTime today) {
     if (selectedFilter == 'Expired') {
       return foods.where((food) {
@@ -193,6 +165,37 @@ class _FoodHomePageState extends State<FoodHomePage> {
     return foods;
   }
 
+  // Dropdown menu for filtering foods based on expiration status
+  Widget dropDownWidget() {
+    return DropdownButton<String>(
+      value: selectedFilter,
+      items: const [
+        DropdownMenuItem(
+          value: 'All',
+          child: Text('All'),
+        ),
+        DropdownMenuItem(
+          value: 'Expired',
+          child: Text('Expired'),
+        ),
+        DropdownMenuItem(
+          value: 'Expiring Soon',
+          child: Text('Expiring Soon'),
+        ),
+        DropdownMenuItem(
+          value: 'Fresh',
+          child: Text('Fresh'),
+        ),
+      ],
+      onChanged: (value) {
+        setState(() {
+          selectedFilter = value!;
+        });
+      },
+    );
+  }
+
+  // add new food dialog box (too long)
   void showAddDialog(BuildContext context) {
     final foodNameController = TextEditingController(); 
     final expirationDateController = TextEditingController();
@@ -281,6 +284,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
+  // delete food dialog box
   void showDeleteDialog(BuildContext context, Food food) {
     showDialog(
       context: context,
@@ -289,23 +293,15 @@ class _FoodHomePageState extends State<FoodHomePage> {
         content: Text('Delete ${food.name}?'),
         actions: [
           TextButton(
-            onPressed:() {
-              deleteFood(food);
+            onPressed:() async {
+              await foodDatabase.deleteFood(food.id);
+              await loadFoods();
               Navigator.pop(context);
-              // // to check if items are being deleted properly
-              // for (final food in foods) {
-              //   print(food);
-              // }
             },
             child: Text('Delete'),
           ),
         ],
       ),
     );
-  }
-
-  void deleteFood(Food food) async {
-    await foodDatabase.deleteFood(food.id);
-    await loadFoods();
   }
 }
