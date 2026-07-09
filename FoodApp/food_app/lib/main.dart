@@ -20,7 +20,6 @@ class FoodApp extends StatelessWidget {
 
 class FoodHomePage extends StatefulWidget {
   const FoodHomePage({super.key});
-
   @override
   State<FoodHomePage> createState() => _FoodHomePageState();
 }
@@ -39,7 +38,8 @@ class _FoodHomePageState extends State<FoodHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime today = getToday();
+    final now = DateTime.now();
+    DateTime today = truncateTime(now);
     List<Food> filteredFoods = foods;
     filteredFoods = getFilteredFoods(filteredFoods, selectedFilter, today);
     return Scaffold(
@@ -55,68 +55,18 @@ class _FoodHomePageState extends State<FoodHomePage> {
               'Welcome to the Food Expiration App!',
             ),
             const SizedBox(height: 16.0),
-            dropDownWidget(),
-            expandFoodListBuilder(filteredFoods, today)
+            selectFoodFilter(),
+            displayFoodList(filteredFoods, today)
           ]
         )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showAddDialog(context);
+          showAddFoodDialog(context);
         },
         child: const Icon(Icons.add),
       ),
     );
-  }
-
-  // Build the list of foods based on the filtered list
-  Expanded expandFoodListBuilder(List<Food> filteredFoods, DateTime today) {
-    return Expanded(
-            // list of foods displayed
-            child: ListView.builder(
-              itemCount: filteredFoods.length,
-              itemBuilder: (context, index) {
-                final food = filteredFoods[index];
-                
-                // expiration date truncated to just year month day
-                final expirationDate = DateTime(
-                  food.expirationDate.year,
-                  food.expirationDate.month,
-                  food.expirationDate.day,
-                );
-
-                final daysLeft = expirationDate.difference(today).inDays;
-
-                // expiration date icon color code
-                String expirationStatusIcon;
-                if (expirationDate.isBefore(today)) {
-                  expirationStatusIcon = '🔴';
-                }
-                else if (daysLeft <= 3) {
-                  expirationStatusIcon = '🟡';
-                }
-                else {
-                  expirationStatusIcon = '🟢';
-                }
-                return ListTile(
-                  leading: Text(
-                    expirationStatusIcon,
-                  ),
-                  title: Text(food.name),
-                  subtitle: 
-                  Text('Expires: ${DateFormat('yyyy-MM-dd').format(food.expirationDate)}'),
-                  onTap: () {
-                  },
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      showDeleteDialog(context, food);
-                    },
-                  )
-                );
-              }
-            )
-          );
   }
 
   // Initialize the database and load foods when the app starts
@@ -132,15 +82,27 @@ class _FoodHomePageState extends State<FoodHomePage> {
     });
   }
 
-  // Get today's date without time component
-  DateTime getToday() {
-    final now = DateTime.now();
-    final today = DateTime(
-      now.year,
-      now.month,
-      now.day
+  // Get time truncated to just year month day for comparison purposes
+  DateTime truncateTime(DateTime time) {
+    final truncatedTime = DateTime(
+      time.year,
+      time.month,
+      time.day
     );
-    return today;
+    return truncatedTime;
+  }
+
+  // Determine the expiration status icon color based on days left
+  String expirationStatus(int daysLeft) {
+    if (daysLeft < 0) {
+      return '🔴';
+    }
+    else if (daysLeft <= 3) {
+      return '🟡';
+    }
+    else {
+      return '🟢';
+    }
   }
 
   // Filter foods based on the selected filter
@@ -165,8 +127,39 @@ class _FoodHomePageState extends State<FoodHomePage> {
     return foods;
   }
 
+  // build new food object from user input
+  Food buildFood(TextEditingController foodNameController, TextEditingController expirationDateController) {
+    final newFood = Food(
+      id: 0,
+      name: foodNameController.text,
+      expirationDate: DateTime.parse(expirationDateController.text),
+    );
+    return newFood;
+  }
+
+  // get expiration date from calendar picker, format to YYYY-MM-DD
+  Future<void> getExpirationDate(BuildContext context, TextEditingController expirationDateController) async {
+    DateTime? pickedDate = await pickCalenderDate(context);
+    if (pickedDate != null) {
+      expirationDateController.text = 
+      // padLeft helps with the formatting
+      "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+    }
+  }
+
+  // show calendar picker for expiration date
+  Future<DateTime?> pickCalenderDate(BuildContext context) async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(DateTime.now().year + 100), // just so that this keeps updating as time goes on
+    );
+    return pickedDate;
+  }
+
   // Dropdown menu for filtering foods based on expiration status
-  Widget dropDownWidget() {
+  Widget selectFoodFilter() {
     return DropdownButton<String>(
       value: selectedFilter,
       items: const [
@@ -195,8 +188,40 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
-  // add new food dialog box (too long)
-  void showAddDialog(BuildContext context) {
+   // Build the list of foods based on the filtered list
+  Expanded displayFoodList(List<Food> filteredFoods, DateTime today) {
+    return Expanded(
+      child: ListView.builder(
+        itemCount: filteredFoods.length,
+        itemBuilder: (context, index) {
+          // for each food in filteredFoods...
+          final food = filteredFoods[index];
+          final expirationDate = truncateTime(food.expirationDate);
+          final daysLeft = expirationDate.difference(today).inDays;
+          // expiration date icon color code
+          String expirationStatusIcon = expirationStatus(daysLeft);
+          return ListTile(
+            leading: Text(
+              expirationStatusIcon,
+            ),
+            title: Text(food.name),
+            subtitle: 
+            Text('Expires: ${DateFormat('yyyy-MM-dd').format(food.expirationDate)}'),
+            onTap: () {
+            },
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                showDeleteFoodDialog(context, food);
+              },
+            )
+          );
+        }
+      )
+    );
+  }
+    // add new food dialog box (too long)
+  void showAddFoodDialog(BuildContext context) {
     final foodNameController = TextEditingController(); 
     final expirationDateController = TextEditingController();
     showDialog(
@@ -209,14 +234,10 @@ class _FoodHomePageState extends State<FoodHomePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-    
-                // food user input code
                 controller: foodNameController,
                 decoration: const InputDecoration(
                   labelText: 'Food Name',
                 ),
-    
-                // if empty error
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Enter a food name';
@@ -224,33 +245,16 @@ class _FoodHomePageState extends State<FoodHomePage> {
                   return null;
                 },
               ),
-    
               TextFormField(
-                // expiration date user input code
                 controller: expirationDateController,
                 readOnly: true,
                 decoration: const InputDecoration(
                   labelText: 'Expiration Date',
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
-                
-                // calender code
                 onTap: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(DateTime.now().year + 100), // just so that this keeps updating as time goes on
-                  );
-    
-                  if (pickedDate != null) {
-                    expirationDateController.text = 
-                    // YYYY, MM, DD, padLeft helps with the formatting
-                    "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                  }
+                  await getExpirationDate(context, expirationDateController);
                 },
-    
-                // if empty error
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Enter an expiration date';
@@ -263,15 +267,9 @@ class _FoodHomePageState extends State<FoodHomePage> {
         ),
         actions: [
           TextButton(
-            // if both are valid, proceed
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                final newFood = Food(
-                  id: 0, // id will be auto-generated by the database
-                  name: foodNameController.text,
-                  expirationDate: DateTime.parse(expirationDateController.text),
-                );
-
+                Food newFood = buildFood(foodNameController, expirationDateController);
                 await foodDatabase.insertFood(newFood);
                 await loadFoods(); // Refresh the list after inserting new food
                 Navigator.pop(context);
@@ -285,7 +283,7 @@ class _FoodHomePageState extends State<FoodHomePage> {
   }
 
   // delete food dialog box
-  void showDeleteDialog(BuildContext context, Food food) {
+  void showDeleteFoodDialog(BuildContext context, Food food) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
