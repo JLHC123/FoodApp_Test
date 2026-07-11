@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/food.dart';
 import '../databases/food_database.dart';
-import '../widgets/addFoodDialog.dart';
-import '../widgets/deleteFoodDialog.dart';
-import '../widgets/foodFilterDropdown.dart';
-import '../widgets/displayFoodList.dart';
+import '../widgets/add_food_dialog.dart';
+import '../widgets/delete_food_dialog.dart';
+import '../widgets/food_filter_dropdown.dart';
+import '../widgets/display_food_list.dart';
 import '../utils/food_utils.dart';
 
 class FoodHomePage extends StatefulWidget {
