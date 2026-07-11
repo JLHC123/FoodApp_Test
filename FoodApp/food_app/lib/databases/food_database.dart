@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'food.dart';
+import '../models/food.dart';
 
 class FoodDatabase {
     Database? _database;
