@@ -17,6 +17,11 @@ class DisplayFoodList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (filteredFoods.isEmpty) {
+      return const Center(
+        child: Text('No food items found.'),
+      );
+    }
     return Expanded(
       child: ListView.builder(
         itemCount: filteredFoods.length,
