@@ -7,12 +7,14 @@ class DisplayFoodList extends StatelessWidget {
   final List<Food> filteredFoods;
   final DateTime today;
   final Future<void> Function(Food)? onDelete;
+  final void Function(Food)? onPress;
 
   const DisplayFoodList({
     super.key,
     required this.filteredFoods,
     required this.today,
     this.onDelete,
+    this.onPress,
   });
 
   @override
@@ -40,6 +42,7 @@ class DisplayFoodList extends StatelessWidget {
             subtitle: 
             Text('Expires: ${DateFormat('yyyy-MM-dd').format(food.expirationDate)}'),
             onTap: () {
+              onPress?.call(food);
             },
             trailing: IconButton(
               icon: const Icon(Icons.delete),

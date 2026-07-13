@@ -5,6 +5,7 @@ import '../widgets/add_food_dialog.dart';
 import '../widgets/delete_food_dialog.dart';
 import '../widgets/food_filter_dropdown.dart';
 import '../widgets/display_food_list.dart';
+import '../widgets/food_details_dialog.dart';
 import '../utils/food_utils.dart';
 
 class FoodHomePage extends StatefulWidget {
@@ -125,6 +126,14 @@ class _FoodHomePageState extends State<FoodHomePage> {
     );
   }
 
+  // connects to foodDetailsDialog
+  void showFoodDetailsDialog(BuildContext context, Food food) {
+    showDialog(
+      context: context,
+      builder: (context) => FoodDetailsDialog(food: food),
+    );
+  }
+
   // Dropdown menu for filtering foods based on expiration status
   Widget selectFoodFilter() {
     return FoodFilterDropdown(
@@ -145,6 +154,9 @@ class _FoodHomePageState extends State<FoodHomePage> {
         today: today,
         onDelete: (food) async {
           showDeleteFoodDialog(context, food);
+        },
+        onPress: (food) {
+          showFoodDetailsDialog(context, food);
         },
       )
     );
